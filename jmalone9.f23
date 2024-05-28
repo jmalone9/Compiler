@@ -1,0 +1,42 @@
+program jmalone9
+{
+	function integer main()
+	{
+		integer i := 52;
+		if ( i >= 50 ) then
+			i := 100;
+			integer b:= 200;
+		}
+	function integer FUNCTION2(){
+		integer a;
+		a := 5000000;
+		while(a >= 10000000){
+			b := 1000;
+			a++;
+			if(a >= b) then
+				b++;
+			else
+				a++;
+		}
+
+		if(a >= b) then {
+			a++;
+		}
+		else
+			b++;
+
+		if(a >= b) then {
+			a++;
+		}
+		else {
+			b++;
+		}
+
+		if(a >= b) then
+			a++;
+		else {
+			b++;
+		}
+
+	}
+}

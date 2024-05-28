@@ -1,0 +1,335 @@
+%{
+int nline, nchar;
+#include<iostream>
+#include<string>
+#include"nodes.hpp"
+#include"parser.tab.hpp"
+
+using std::string;
+using std::endl;
+using std::cerr;
+using std::cout;
+
+void yyerror(const char *string)
+{
+  cerr << string << endl;
+  return;
+}
+
+/*////////////////////
+0: IDENTIFIER
+1: ICONSTANT
+2: DCONSTANT
+3: SCONSTANT
+*/////////////////////
+struct symbolTable {
+	int type = -1;
+	char svalue[20];
+};
+
+bool duplCheck(symbolTable syt[500], int t, int ind, char* val) {
+	for(int i = 0; i < ind; i++) {
+		if(syt[i].type == t) {
+			//printf("\ncomparing S1:%s to S2:%s\n",syt[i].svalue, val);
+			if(syt[i].svalue != NULL && strcmp(syt[i].svalue,val) == 0) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+symbolTable stable[500];
+int tableIndex = 0;
+%}
+
+%option outfile="lexer_lex.cpp"
+%option noyywrap
+%option yylineno
+
+
+
+NUMBERS [0-9]+
+IDENTIFIER [a-zA-Z_$][a-zA-Z0-9_$]*
+
+
+%%
+
+\".*\" {
+	if(duplCheck(stable, 3, tableIndex, yytext) == true) {
+		return SCONSTANT;
+	}
+	stable[tableIndex].type = 3;
+	sprintf(stable[tableIndex].svalue, "%s", yytext);
+	tableIndex++;
+return SCONSTANT;
+}
+
+"\\". {
+
+}
+
+{NUMBERS} {
+/*THIS IS A TEMPORARY FIX*/
+	int temp;
+	temp = atoi(yytext);
+	sprintf(yytext, "%d", temp);
+	if(duplCheck(stable, 1, tableIndex, yytext) == true) {
+		return ICONSTANT;
+	}
+	stable[tableIndex].type = 1;
+	sprintf(stable[tableIndex].svalue, "%s", yytext);
+	tableIndex++;
+return ICONSTANT;
+
+}
+
+\-?([0-9]*\.[0-9]+(d([\-\+]?)[0-9]+)?)|([0-9]+\.[0-9]*) {
+	if(duplCheck(stable, 2, tableIndex, yytext) == true) {
+		return DCONSTANT;
+	}
+	stable[tableIndex].type = 2;
+	sprintf(stable[tableIndex].svalue, "%s", yytext);
+	tableIndex++;
+return DCONSTANT;
+}
+
+"do" {
+return K_DO;
+}
+
+"double" {
+return K_DOUBLE;
+}
+
+"else" {
+return K_ELSE;
+}
+
+"exit" {
+return K_EXIT;
+}
+
+"function" {
+return K_FUNCTION;
+}
+
+"if" {
+return K_IF;
+}
+
+"integer" {
+return K_INTEGER;
+}
+
+"print_double" {
+return K_PRINT_DOUBLE;
+}
+
+"print_integer" {
+return K_PRINT_INTEGER;
+}
+
+"print_string" {
+return K_PRINT_STRING;
+}
+
+"procedure" {
+return K_PROCEDURE;
+}
+
+"program" {
+return K_PROGRAM;
+}
+
+"read_double" {
+return K_READ_DOUBLE;
+}
+
+"read_integer" {
+return K_READ_INTEGER;
+}
+
+"read_string" {
+return K_READ_STRING;
+}
+
+"return" {
+return K_RETURN;
+}
+
+"string" {
+return K_STRING;
+}
+
+"then" {
+return K_THEN;
+}
+
+"while" {
+return K_WHILE;
+}
+
+":="     {
+return ASSIGN;
+}
+
+"+=" {
+return ASSIGN_PLUS;
+}
+
+"-=" {
+return ASSIGN_MINUS;
+}
+
+"*=" {
+return ASSIGN_MULTIPLY;
+}
+
+"/=" {
+return ASSIGN_DIVIDE;
+}
+
+"%=" {
+return ASSIGN_MOD;
+}
+
+"," {
+return COMMA;
+}
+"//".* {
+return COMMENT;
+}
+"&&" {
+return DAND;
+}
+"/" {
+return DIVIDE;
+}
+
+"||" {
+return DOR;
+}
+
+"==" {
+return DEQ;
+}
+
+">=" {
+return GEQ;
+}
+
+">" {
+return GT;
+}
+
+"[" {
+return LBRACKET;
+}
+
+"<=" {
+return LEQ;
+}
+
+"{" {
+return LCURLY;
+}
+
+"(" {
+return LPAREN;
+}
+
+"<" {
+return LT;
+}
+
+"-" {
+return MINUS;
+}
+
+"--" {
+return DECREMENT;
+}
+
+"%" {
+return MOD;
+}
+
+"*" {
+return MULTIPLY;
+}
+
+"!=" {
+return NE;
+}
+
+"!" {
+return NOT;
+}
+
+"." {
+return PERIOD;
+}
+
+"+" {
+return PLUS;
+}
+
+"++" {
+return INCREMENT;
+}
+
+"]" {
+return RBRACKET;
+}
+
+"}" {
+return RCURLY;
+}
+
+")" {
+return RPAREN;
+}
+
+";" {
+return SEMI;
+}
+
+\n {
+++nchar;
+++nline;
+
+}
+
+{IDENTIFIER} {
+	if(duplCheck(stable, 0, tableIndex, yytext) == true) {
+		return IDENTIFIER;
+	}
+	stable[tableIndex].type = 0;
+	sprintf(stable[tableIndex].svalue, "%s", yytext);
+	tableIndex++;
+
+return IDENTIFIER;
+}
+
+\s* {
+
+}
+
+<<EOF>> {
+
+	for(int i = 0; i < 500; i++){
+		if(stable[i].type != -1){
+			printf("\nIndex:%d, Type:%d, Value:%s\n",i,stable[i].type, stable[i].svalue);
+		}
+	}
+
+return END_OF_FILE;
+}
+
+. {   
+
+}
+%%
+
+

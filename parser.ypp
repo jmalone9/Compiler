@@ -1,0 +1,79 @@
+    %{
+#include <iostream>
+#include <string>
+#include <FlexLexer.h>
+#include "nodes.hpp"
+using namespace std;
+
+extern yyFlexLexer scanner;
+#define yylex() scanner.yylex()
+void yyerror(const char *);
+extern Node *tree;
+
+%}
+
+%union {
+  Node *ttype;
+};
+
+%token<ttype> ICONSTANT DCONSTANT SCONSTANT K_DO K_DOUBLE RPAREN SEMI IDENTIFIER
+%token<ttype> K_ELSE K_EXIT K_FUNCTION K_IF K_INTEGER K_PRINT_DOUBLE K_PRINT_INTEGER
+%token<ttype> K_PRINT_STRING K_PROCEDURE K_PROGRAM K_READ_DOUBLE K_READ_INTEGER
+%token<ttype> K_READ_STRING K_RETURN K_STRING K_THEN K_WHILE ASSIGN ASSIGN_PLUS
+%token<ttype> ASSIGN_MINUS ASSIGN_MULTIPLY ASSIGN_DIVIDE ASSIGN_MOD COMMA COMMENT
+%token<ttype> DAND DIVIDE DOR DEQ GEQ GT LBRACKET LEQ LCURLY LPAREN LT MINUS
+%token<ttype> DECREMENT MOD MULTIPLY NE NOT PERIOD PLUS INCREMENT RBRACKET RCURLY
+%token<ttype> END_OF_FILE
+
+%type<ttype> program body function functionbody elements exp vardec
+
+%%
+program : 	K_PROGRAM IDENTIFIER body EOF{
+    printf("Program declaration \n");
+    tree = $1;
+    //$1->setnext($3);
+    $$ = $1;
+    exit(0);
+};
+
+body: 		LCURLY function RCURLY { 
+    $$ = $1;
+    printf("body declaration \n");
+};
+
+function: 	K_FUNCTION K_INTEGER IDENTIFIER LPAREN RPAREN LCURLY functionbody RCURLY {
+    printf("function declaration \n");
+};
+
+functionbody: 	elements {
+    printf("elements \n");}
+ 		| functionbody elements {
+    printf("functionbody elements \n");
+};
+
+elements: 	exp {
+    printf("elements exp \n");}
+ 		| vardec {
+    printf("elements vardec \n");
+};
+
+exp: 		IDENTIFIER ASSIGN ICONSTANT SEMI {
+    printf("exp assign \n");}
+ 		| K_PRINT_INTEGER LPAREN IDENTIFIER RPAREN SEMI {
+    printf("exp print int \n");}
+ 		| K_PRINT_STRING LPAREN SCONSTANT RPAREN SEMI {
+    printf("exp print string \n");
+};
+
+vardec: 	K_INTEGER IDENTIFIER SEMI {
+    printf("vardec\n");
+    $$ = new Node($1, $2);
+    //$1->setval();
+};
+
+EOF: END_OF_FILE {
+};
+
+%%
+
+

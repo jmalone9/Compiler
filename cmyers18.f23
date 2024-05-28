@@ -1,0 +1,23 @@
+program cmyersTest
+{
+    procedure add( integer i integer j)
+    {
+    integer k;
+    k := i + j;
+        print_string("ints added together: \n");
+        print_integer(k);
+    }
+
+    function integer main()
+    {        
+        integer i := 441;
+        integer j := 1;
+        do (a := 0; a < 10; a++) {
+        add(i j);
+        j++;
+        if (j <= 5) then
+            print_string("j >= 5 \n");
+    }
+    
+    }
+}
