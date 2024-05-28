@@ -12,11 +12,13 @@ parser.tab.cpp: parser.ypp
 lexer_lex.cpp: lexer.lpp
 	flex++ --warn lexer.lpp
 
-test1: parser
-	./parser < test1.f23
-test2: parser
-	./parser < test2.f23
+testJM9: parser
+	./parser < jmalone9.f23 > jmalone9OUT.f23
+testCM18: parser
+	./parser < cmyers18.f23 > cmyers18OUT.f23
+testMG: parser
+	./parser < mg.f23 > mgOUT.f23
 
 clean:
-	rm lexer_lex.cpp parser parser.tab.cpp parser.tab.hpp
+	rm lexer_lex.cpp parser parser.tab.cpp parser.tab.hpp testout.f23 jmalone9OUT.f23 cmyers18OUT.f23 mgOUT.f23
 

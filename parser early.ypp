@@ -27,7 +27,7 @@ Node *ttype;
 %token<ttype> END_OF_FILE
 
 
-%type<ttype> body function functionbody elements bodyelements procedure funarguments exp vardec print_ value_ arithmetic loopexp logiops loopif program vardeclist tempelse K_typelist typelist /*tempassign*/
+%type<ttype> body function functionbody elements bodyelements procedure funarguments exp vardec print_ value_ arithmetic loopexp logiops loopif program vardeclist tempelse K_typelist typelist
 
 
 %%
@@ -60,20 +60,32 @@ bodyelements:	function {
 procedure: 	K_PROCEDURE IDENTIFIER LPAREN funarguments RPAREN LCURLY functionbody RCURLY {
 		printf("procedure declaration \n");
 };
-
-funarguments:    K_INTEGER IDENTIFIER {}
+funarguments:   K_INTEGER IDENTIFIER{
+	printf("int argument \n");}
 		| K_STRING IDENTIFIER {}
 		| K_DOUBLE IDENTIFIER {}
-		| K_INTEGER IDENTIFIER LBRACKET RBRACKET {}
-		| K_STRING IDENTIFIER LBRACKET RBRACKET {}
-		| K_DOUBLE IDENTIFIER LBRACKET RBRACKET {}
 		| IDENTIFIER {}
 		| ICONSTANT {}
 		| SCONSTANT {}
 		| DCONSTANT {}
-		| funarguments COMMA funarguments {}
-		| %empty {};
-
+		| vardec {}
+		| funarguments COMMA vardec {}
+		| %empty {}
+		| funarguments COMMA K_INTEGER IDENTIFIER {
+			printf("multiple args \n");}
+		| funarguments COMMA K_STRING IDENTIFIER {
+			printf("multiple args \n");}
+		| funarguments COMMA K_DOUBLE IDENTIFIER {
+			printf("multiple args \n");}
+		| funarguments COMMA IDENTIFIER {
+			printf("multiple args \n");}
+		| funarguments COMMA ICONSTANT {
+			printf("multiple args \n");}
+		| funarguments COMMA SCONSTANT  {
+			printf("multiple args \n");}
+		| funarguments COMMA DCONSTANT {
+			printf("multiple args \n");
+};
 function: 	K_FUNCTION K_typelist IDENTIFIER LPAREN RPAREN LCURLY functionbody RCURLY {
     printf("function declaration \n");
     //$$ = new Node(0,$7);
@@ -83,7 +95,20 @@ function: 	K_FUNCTION K_typelist IDENTIFIER LPAREN RPAREN LCURLY functionbody RC
 		| K_FUNCTION K_typelist IDENTIFIER LPAREN funarguments RPAREN LCURLY functionbody RCURLY {
 			printf("function declaration\n");
 		}
-;
+/*
+		| function: 	K_FUNCTION K_INTEGER IDENTIFIER LPAREN RPAREN LCURLY functionbody K_RETURN ICONSTANT SEMI RCURLY {
+    printf("function declaration \n");
+    //$$ = new Node(0,$7);
+    //$$->setval("function declaration\n");
+
+}
+
+		| function: 	K_FUNCTION K_INTEGER IDENTIFIER LPAREN RPAREN LCURLY functionbody K_RETURN IDENTIFIER SEMI RCURLY {
+    printf("function declaration \n");
+    //$$ = new Node(0,$7);
+    //$$->setval("function declaration\n"); 
+
+}*/;
 
 
 functionbody: 	elements {
@@ -112,34 +137,48 @@ elements: 	exp SEMI{
 
 
 
-exp: 		IDENTIFIER ASSIGN typelist  {
-    			printf("exp assign \n");}
+exp: 		IDENTIFIER ASSIGN ICONSTANT  {
+    			printf("exp assign int \n");}
+		| IDENTIFIER ASSIGN SCONSTANT  {
+   			 printf("exp assign string \n");}
+		|  IDENTIFIER ASSIGN DCONSTANT  {
+    			printf("exp assign double \n");}
 		|  IDENTIFIER ASSIGN IDENTIFIER  {
     			printf("exp assign variable \n");}
 		| IDENTIFIER ASSIGN arithmetic {
 			printf("exp assign arithmetic \n");}
 		| IDENTIFIER ASSIGN IDENTIFIER LPAREN funarguments RPAREN {
-			printf("exp assign function \n");}
-		//| tempassign {printf("hit\n");}
+			printf("exp assign arithmetic \n");}
 		//temp hack
 		| IDENTIFIER LBRACKET arithmetic RBRACKET ASSIGN IDENTIFIER LBRACKET arithmetic RBRACKET ASSIGN arithmetic {
 			printf("exp assign exp assign arithmetic\n");
 		}
-
-		//arrays
-		|  IDENTIFIER LBRACKET arithmetic RBRACKET ASSIGN typelist  {
-    			printf("exp assign double \n");}
 		| IDENTIFIER LBRACKET arithmetic RBRACKET ASSIGN arithmetic {
 			printf("exp assign arithmetic\n");
 		}
 
+		//arrays
+		|  IDENTIFIER LBRACKET arithmetic RBRACKET ASSIGN DCONSTANT  {
+    			printf("exp assign double \n");}
+		|  IDENTIFIER LBRACKET arithmetic RBRACKET ASSIGN ICONSTANT  {
+    			printf("exp assign int \n");}
+		|  IDENTIFIER LBRACKET arithmetic RBRACKET ASSIGN IDENTIFIER  {
+    			printf("exp assign identifier \n");}
+		| IDENTIFIER arithmetic  {}
 		| print_ {}
 		| arithmetic {}
 		| IDENTIFIER LPAREN funarguments RPAREN  {
 		printf("function call \n");}
+		| IDENTIFIER LPAREN RPAREN  {
+		printf("function call \n");
+		}
 		| K_RETURN exp {
 		printf("return\n");
+		}
+		| K_RETURN IDENTIFIER {
+		printf("return\n");
 		};
+//		| loopif {
 
 
 
@@ -153,6 +192,14 @@ loopif:  K_DO LPAREN loopexp RPAREN LCURLY functionbody RCURLY {
 			printf("while loop \n");}
 		| K_WHILE LPAREN logicalEXP RPAREN exp SEMI {
 			printf("while loop \n");}
+
+		//fix these while loops with the logicalEXP
+/*
+		| K_WHILE LPAREN IDENTIFIER logiops ICONSTANT RPAREN LCURLY functionbody RCURLY{
+			printf("while loop \n");}
+		| K_WHILE LPAREN ICONSTANT logiops IDENTIFIER RPAREN LCURLY functionbody RCURLY{
+			printf("while loop \n");}
+*/
 		| K_IF LPAREN logicalEXP RPAREN K_THEN exp SEMI { 
 			printf("If statement no curly\n");
 		}
@@ -165,7 +212,8 @@ loopif:  K_DO LPAREN loopexp RPAREN LCURLY functionbody RCURLY {
 		| K_IF LPAREN logicalEXP RPAREN K_THEN LCURLY functionbody RCURLY tempelse  {
 			printf("If statement curly with curly else\n");
 		}
-		//temp elseif
+		//| K_IF LPAREN logicalEXP RPAREN K_THEN exp SEMI K_ELSE K_IF LPAREN logicalEXP RPAREN K_THEN LCURLY functionbody RCURLY tempelse  {
+		//	printf("If statement curly with curly else\n");
 		| K_IF LPAREN logicalEXP RPAREN K_THEN exp SEMI K_ELSE K_IF LPAREN logicalEXP RPAREN K_THEN LCURLY functionbody RCURLY tempelse  {
 			printf("If statement curly with curly else\n");
 		};
@@ -177,18 +225,12 @@ tempelse: K_ELSE exp SEMI {
 			printf("with curly else\n");
 };
 
-/*
-tempassign:	tempassign ASSIGN tempassign {}
-		| tempassign ASSIGN arithmetic {}
-		| IDENTIFIER LBRACKET arithmetic RBRACKET {};
-*/
-
 logiops: LT {}
 	| GT{}
 	| LEQ {}
-	| GEQ {}
+	| GEQ {printf("GEQ\n");}
 	| DEQ {}
-	| NE {}
+	| NE {printf("NE\n");}
 ;
 
 logicalEXP: exp logiops exp {}
@@ -216,7 +258,6 @@ arithmetic: 	arithmetic DIVIDE arithmetic {
 			printf("arithmetic val \n");}
 		| value_ INCREMENT  {
 			printf("increment\n");}
-		//fix these
 		| value_ DECREMENT arithmetic {
 			printf("decrement\n");}
 		| value_ ASSIGN_PLUS arithmetic {
@@ -240,27 +281,85 @@ value_:		ICONSTANT {}
 		| IDENTIFIER LBRACKET IDENTIFIER arithmetic RBRACKET {}
 ;
 
-print_:		K_PRINT_INTEGER LPAREN value_ RPAREN  {
+print_:		K_PRINT_INTEGER LPAREN IDENTIFIER RPAREN  {
     		printf("exp print int \n");}
  		| K_PRINT_STRING LPAREN SCONSTANT RPAREN  {
     		printf("exp print string \n");}
 		| K_PRINT_STRING LPAREN IDENTIFIER RPAREN  {
     		printf("exp print string ind \n");}
+		| K_PRINT_DOUBLE LPAREN DCONSTANT RPAREN  {
+    		printf("exp print double \n");}
 		| K_PRINT_DOUBLE LPAREN value_ RPAREN  {
-    		printf("exp print double \n");
+    		printf("exp print double iden \n");}
+    		| K_PRINT_INTEGER LPAREN ICONSTANT RPAREN  {
+    		printf("exp print int \n");
 };
 
 
 
-vardec: 	K_typelist vardeclist  {}
-;
+vardec: 	
+
+		K_typelist IDENTIFIER  {
+    			printf("vardec int \n");
+			//$$ = new Node($1,$2);
+			//$$->setval("vardec int\n");
+		} 
+
+/*******************************************************
+
+
+
+		| K_DOUBLE IDENTIFIER  {
+    			printf("vardec double \n");} 
+    		| K_STRING IDENTIFIER  {
+			printf("vardec string \n");}
+*******************************************************/
+
+		//assign
+		| K_INTEGER IDENTIFIER ASSIGN ICONSTANT  {
+    			printf("vardec int array \n");} 
+		| K_DOUBLE IDENTIFIER ASSIGN DCONSTANT  {
+    			printf("vardec double array\n");} 
+    		| K_STRING IDENTIFIER ASSIGN SCONSTANT  {
+			printf("vardec string array\n");}
+
+
+		//arrays
+		| K_INTEGER IDENTIFIER LBRACKET RBRACKET  {
+    			printf("vardec array\n");} 
+		| K_DOUBLE IDENTIFIER LBRACKET RBRACKET {
+    			printf("vardec double array\n");} 
+    		| K_STRING IDENTIFIER LBRACKET RBRACKET {
+			printf("vardec string array\n");}
+		//assign
+		| K_INTEGER IDENTIFIER ASSIGN ICONSTANT LBRACKET RBRACKET {
+    			printf("vardec int array\n");} 
+		| K_DOUBLE IDENTIFIER ASSIGN DCONSTANT LBRACKET RBRACKET {
+    			printf("vardec double array\n");} 
+    		| K_STRING IDENTIFIER ASSIGN SCONSTANT LBRACKET RBRACKET {
+			printf("vardec string array\n");
+		}
+
+		//temp hardcode
+		| K_INTEGER IDENTIFIER ASSIGN ICONSTANT COMMA IDENTIFIER {}
+/*
+//temporarily hard coded for testing
+		| K_INTEGER IDENTIFIER ASSIGN ICONSTANT COMMA IDENTIFIER {}
+		| K_INTEGER IDENTIFIER COMMA IDENTIFIER {}
+		| K_DOUBLE IDENTIFIER LBRACKET arithmetic RBRACKET COMMA IDENTIFIER LBRACKET arithmetic RBRACKET {}
+		| K_DOUBLE IDENTIFIER LBRACKET arithmetic RBRACKET COMMA IDENTIFIER LBRACKET arithmetic RBRACKET COMMA IDENTIFIER LBRACKET arithmetic RBRACKET{
+*/
+		| K_INTEGER vardeclist {}
+		| K_DOUBLE vardeclist {
+};
 
 vardeclist: IDENTIFIER {}
 		| IDENTIFIER LBRACKET RBRACKET {}
 		| IDENTIFIER LBRACKET arithmetic RBRACKET{}
-		| IDENTIFIER ASSIGN typelist {}
+		| IDENTIFIER ASSIGN ICONSTANT {}
 		| IDENTIFIER LBRACKET RBRACKET ASSIGN ICONSTANT {}
 		| IDENTIFIER LBRACKET arithmetic RBRACKET ASSIGN ICONSTANT {}
+
 
 		| vardeclist COMMA vardeclist {
 			printf("multi vardec\n");
@@ -269,11 +368,12 @@ vardeclist: IDENTIFIER {}
 
 K_typelist: K_INTEGER {}
 		| K_DOUBLE {}
-		| K_STRING {};
+		| K_STRING {}
+;
 
 typelist: ICONSTANT {}
 		| DCONSTANT {}
-		| SCONSTANT {};
+		| SCONSTANT {}
 
 EOF: END_OF_FILE {
 };

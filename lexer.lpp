@@ -84,7 +84,7 @@ return ICONSTANT;
 
 }
 
-\-?([0-9]*\.[0-9]+(d([\-\+]?)[0-9]+)?)|([0-9]+\.[0-9]*) {
+\-?([0-9]*\.[0-9]+(d([\-\+]?)[0-9]+)?)|([0-9]+\.d?[0-9]*) {
 	if(duplCheck(stable, 2, tableIndex, yytext) == true) {
 		return DCONSTANT;
 	}
@@ -316,13 +316,13 @@ return IDENTIFIER;
 
 }
 
+\/\/.*$ {
+
+}
+
 <<EOF>> {
 
-	for(int i = 0; i < 500; i++){
-		if(stable[i].type != -1){
-			printf("\nIndex:%d, Type:%d, Value:%s\n",i,stable[i].type, stable[i].svalue);
-		}
-	}
+
 
 return END_OF_FILE;
 }
@@ -331,5 +331,11 @@ return END_OF_FILE;
 
 }
 %%
-
+/* code for EOF to print symboltable
+	for(int i = 0; i < 500; i++){
+		if(stable[i].type != -1){
+			printf("\nIndex:%d, Type:%d, Value:%s\n",i,stable[i].type, stable[i].svalue);
+		}
+	}
+*/
 

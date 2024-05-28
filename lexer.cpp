@@ -17,7 +17,7 @@ Node *tree;
 yyFlexLexer scanner;
 int main(){
 
-printf("\nTESTTESTTEST\n");
+//printf("\nTESTTESTTEST\n");
 	/*FlexLexer *scanner = new yyFlexLexer;
 	int rval = 0;
 	while((rval = scanner->yylex())){
@@ -29,8 +29,8 @@ printf("\nTESTTESTTEST\n");
 
 	}*/
   yyparse();
-  cout << "PRINTING TREE\n" << endl;
+  /*cout << "\nPRINTING TREE\n" << endl;
   tree->print(&cout);
-  cout << endl;
+  cout << endl;*/
 	return 0;
 }
